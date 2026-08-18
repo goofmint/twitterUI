@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans:
+    "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, system-ui,
+    sans-serif;
+  --color-app-bg: var(--bg);
+  --color-app-text: var(--text);
+  --color-app-muted: var(--muted);
+  --color-app-border: var(--border);
+  --color-app-hover: var(--hover);
+  --color-app-accent: var(--accent);
+  --color-app-like: var(--like);
+  --color-app-repost: var(--repost);
+  --color-app-card: var(--card);
+  --color-app-search: var(--search);
+  --color-app-overlay: var(--overlay);
+  --color-app-follow-bg: var(--follow-bg);
+  --color-app-follow-text: var(--follow-text);
+  --color-app-follow-hover: var(--follow-hover);
+  --breakpoint-nav: 43rem;
+  --breakpoint-right: 62.8125rem;
+  --breakpoint-wide: 80.125rem;
+}
+
+:root,
+[data-theme="default"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --text: #0f1419;
+  --muted: #536471;
+  --border: #eff3f4;
+  --hover: #f7f9f9;
+  --accent: #1d9bf0;
+  --like: #f91880;
+  --repost: #00ba7c;
+  --card: #f7f9f9;
+  --search: #eff3f4;
+  --overlay: rgba(0, 0, 0, 0.4);
+  --follow-bg: #0f1419;
+  --follow-text: #ffffff;
+  --follow-hover: #272c30;
+}
+
+[data-theme="dim"] {
+  color-scheme: dark;
+  --bg: #15202b;
+  --text: #f7f9f9;
+  --muted: #8b98a5;
+  --border: #38444d;
+  --hover: #1e2732;
+  --accent: #1d9bf0;
+  --like: #f91880;
+  --repost: #00ba7c;
+  --card: #1e2732;
+  --search: #273340;
+  --overlay: rgba(91, 112, 131, 0.4);
+  --follow-bg: #f7f9f9;
+  --follow-text: #0f1419;
+  --follow-hover: #dde0e2;
+}
+
+[data-theme="lights-out"] {
+  color-scheme: dark;
+  --bg: #000000;
+  --text: #e7e9ea;
+  --muted: #71767b;
+  --border: #2f3336;
+  --hover: #080808;
+  --accent: #1d9bf0;
+  --like: #f91880;
+  --repost: #00ba7c;
+  --card: #16181c;
+  --search: #202327;
+  --overlay: rgba(91, 112, 131, 0.4);
+  --follow-bg: #eff3f4;
+  --follow-text: #0f1419;
+  --follow-hover: #d7dadc;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+}
+
+textarea {
+  font-family: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
