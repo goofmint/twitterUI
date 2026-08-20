@@ -2,27 +2,43 @@ const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-export function formatCompactCount(value: number): string {
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+export function formatCount(value: number): string {
   if (value < 0) {
     throw new Error(`件数が負数です: ${value}`);
   }
-  if (value < 10000) {
-    return value.toLocaleString("ja-JP");
+  return value.toLocaleString("en-US");
+}
+
+function ordinal(day: number): string {
+  const mod100 = day % 100;
+  if (mod100 >= 11 && mod100 <= 13) {
+    return `${day.toString()}th`;
   }
-  if (value < 100000000) {
-    const man = value / 10000;
-    const rounded = Math.round(man * 10) / 10;
-    if (Number.isInteger(rounded)) {
-      return `${rounded.toString()}万`;
-    }
-    return `${rounded.toFixed(1)}万`;
+  switch (day % 10) {
+    case 1:
+      return `${day.toString()}st`;
+    case 2:
+      return `${day.toString()}nd`;
+    case 3:
+      return `${day.toString()}rd`;
+    default:
+      return `${day.toString()}th`;
   }
-  const oku = value / 100000000;
-  const roundedOku = Math.round(oku * 10) / 10;
-  if (Number.isInteger(roundedOku)) {
-    return `${roundedOku.toString()}億`;
-  }
-  return `${roundedOku.toFixed(1)}億`;
 }
 
 export function formatRelativeTime(iso: string, now: number): string {
@@ -31,20 +47,34 @@ export function formatRelativeTime(iso: string, now: number): string {
     throw new Error(`不正な日時です: ${iso}`);
   }
   const diff = now - created.getTime();
+  if (diff < 30_000) {
+    return "less than 20 seconds ago";
+  }
   if (diff < MINUTE) {
-    return "今";
+    return "less than a minute ago";
   }
   if (diff < HOUR) {
-    return `${Math.floor(diff / MINUTE).toString()}分`;
+    const minutes = Math.floor(diff / MINUTE);
+    if (minutes === 1) {
+      return "1 minute ago";
+    }
+    return `about ${minutes.toString()} minutes ago`;
   }
   if (diff < DAY) {
-    return `${Math.floor(diff / HOUR).toString()}時間`;
+    const hours = Math.floor(diff / HOUR);
+    if (hours === 1) {
+      return "about 1 hour ago";
+    }
+    return `about ${hours.toString()} hours ago`;
   }
-  const sameYear = created.getFullYear() === new Date(now).getFullYear();
-  const month = created.getMonth() + 1;
-  const day = created.getDate();
-  if (sameYear) {
-    return `${month.toString()}月${day.toString()}日`;
+  const hours = created.getHours();
+  const minutes = created.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  const month = MONTHS[created.getMonth()];
+  if (month === undefined) {
+    throw new Error(`月が不正です: ${created.getMonth().toString()}`);
   }
-  return `${created.getFullYear().toString()}年${month.toString()}月${day.toString()}日`;
+  const day = ordinal(created.getDate());
+  return `${hour12.toString()}:${minutes} ${ampm} ${month} ${day}`;
 }
