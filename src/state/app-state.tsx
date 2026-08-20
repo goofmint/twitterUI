@@ -6,49 +6,60 @@ import {
   useReducer,
   type ReactNode,
 } from "react";
-import { CURRENT_USER_ID, initialTweets } from "../data/mock";
-import type { FeedTab, PersistedState, ThemeId, Tweet } from "../types";
+import {
+  CURRENT_USER_ID,
+  FEATURED_PROFILE_ID,
+  initialTweets,
+} from "../data/mock";
+import type { PersistedState, Tweet, ViewId } from "../types";
 
-const STORAGE_KEY = "twitterui-state-v1";
+const STORAGE_KEY = "twitterui-state-2010-v1";
+const TWEET_MAX = 140;
 
 type AppState = {
-  theme: ThemeId;
-  tab: FeedTab;
+  signedIn: boolean;
+  view: ViewId;
+  profileUserId: string;
   tweets: Tweet[];
-  likedIds: string[];
-  repostedIds: string[];
+  favoriteIds: string[];
+  retweetIds: string[];
   followedIds: string[];
-  composeOpen: boolean;
+  signInOpen: boolean;
+  signUpOpen: boolean;
+  accountOpen: boolean;
 };
 
 type Action =
-  | { type: "set-theme"; theme: ThemeId }
-  | { type: "set-tab"; tab: FeedTab }
-  | { type: "toggle-like"; tweetId: string }
-  | { type: "toggle-repost"; tweetId: string }
+  | { type: "open-sign-in" }
+  | { type: "close-sign-in" }
+  | { type: "open-sign-up" }
+  | { type: "close-sign-up" }
+  | { type: "toggle-account" }
+  | { type: "close-account" }
+  | { type: "sign-in" }
+  | { type: "sign-out" }
+  | { type: "set-view"; view: ViewId }
+  | { type: "open-profile"; userId: string }
+  | { type: "toggle-favorite"; tweetId: string }
+  | { type: "toggle-retweet"; tweetId: string }
   | { type: "toggle-follow"; userId: string }
-  | { type: "add-tweet"; text: string; imageSrc: string | null }
-  | { type: "open-compose" }
-  | { type: "close-compose" };
+  | { type: "add-tweet"; text: string };
 
 type AppContextValue = {
   state: AppState;
   currentUserId: string;
+  tweetMax: number;
   dispatch: (action: Action) => void;
 };
 
 const AppStateContext = createContext<AppContextValue | null>(null);
 
-function isThemeId(value: string): value is ThemeId {
-  return value === "default" || value === "dim" || value === "lights-out";
-}
-
 function isPersistedState(value: PersistedState): boolean {
   return (
-    isThemeId(value.theme) &&
+    typeof value.signedIn === "boolean" &&
     Array.isArray(value.tweets) &&
-    Array.isArray(value.likedIds) &&
-    Array.isArray(value.repostedIds) &&
+    Array.isArray(value.favoriteIds) &&
+    Array.isArray(value.retweetIds) &&
     Array.isArray(value.followedIds)
   );
 }
@@ -69,41 +80,30 @@ function createInitialState(): AppState {
   const persisted = loadPersisted();
   if (persisted === null) {
     return {
-      theme: "default",
-      tab: "for-you",
+      signedIn: false,
+      view: "profile",
+      profileUserId: FEATURED_PROFILE_ID,
       tweets: initialTweets,
-      likedIds: [],
-      repostedIds: [],
+      favoriteIds: [],
+      retweetIds: [],
       followedIds: [],
-      composeOpen: false,
+      signInOpen: false,
+      signUpOpen: false,
+      accountOpen: false,
     };
   }
   return {
-    theme: persisted.theme,
-    tab: "for-you",
+    signedIn: persisted.signedIn,
+    view: persisted.signedIn ? "home" : "profile",
+    profileUserId: FEATURED_PROFILE_ID,
     tweets: persisted.tweets,
-    likedIds: persisted.likedIds,
-    repostedIds: persisted.repostedIds,
+    favoriteIds: persisted.favoriteIds,
+    retweetIds: persisted.retweetIds,
     followedIds: persisted.followedIds,
-    composeOpen: false,
+    signInOpen: false,
+    signUpOpen: false,
+    accountOpen: false,
   };
-}
-
-function updateTweetCount(
-  tweets: Tweet[],
-  tweetId: string,
-  key: "likeCount" | "repostCount",
-  delta: number,
-): Tweet[] {
-  return tweets.map((tweet) => {
-    if (tweet.id !== tweetId) {
-      return tweet;
-    }
-    return {
-      ...tweet,
-      [key]: tweet[key] + delta,
-    };
-  });
 }
 
 function toggleId(ids: string[], id: string): string[] {
@@ -113,36 +113,76 @@ function toggleId(ids: string[], id: string): string[] {
   return [...ids, id];
 }
 
+function updateCount(
+  tweets: Tweet[],
+  tweetId: string,
+  key: "favoriteCount" | "retweetCount",
+  delta: number,
+): Tweet[] {
+  return tweets.map((tweet) => {
+    if (tweet.id !== tweetId) {
+      return tweet;
+    }
+    return { ...tweet, [key]: tweet[key] + delta };
+  });
+}
+
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case "set-theme":
-      return { ...state, theme: action.theme };
-    case "set-tab":
-      return { ...state, tab: action.tab };
-    case "toggle-like": {
-      const liked = state.likedIds.includes(action.tweetId);
+    case "open-sign-in":
+      return { ...state, signInOpen: true, signUpOpen: false, accountOpen: false };
+    case "close-sign-in":
+      return { ...state, signInOpen: false };
+    case "open-sign-up":
+      return { ...state, signUpOpen: true, signInOpen: false };
+    case "close-sign-up":
+      return { ...state, signUpOpen: false };
+    case "toggle-account":
+      return { ...state, accountOpen: !state.accountOpen };
+    case "close-account":
+      return { ...state, accountOpen: false };
+    case "sign-in":
       return {
         ...state,
-        likedIds: toggleId(state.likedIds, action.tweetId),
-        tweets: updateTweetCount(
-          state.tweets,
-          action.tweetId,
-          "likeCount",
-          liked ? -1 : 1,
-        ),
+        signedIn: true,
+        view: "home",
+        signInOpen: false,
+        signUpOpen: false,
+        accountOpen: false,
+      };
+    case "sign-out":
+      return {
+        ...state,
+        signedIn: false,
+        view: "profile",
+        profileUserId: FEATURED_PROFILE_ID,
+        signInOpen: false,
+        accountOpen: false,
+      };
+    case "set-view":
+      return { ...state, view: action.view, accountOpen: false, signInOpen: false };
+    case "open-profile":
+      return {
+        ...state,
+        view: "profile",
+        profileUserId: action.userId,
+        accountOpen: false,
+        signInOpen: false,
+      };
+    case "toggle-favorite": {
+      const on = state.favoriteIds.includes(action.tweetId);
+      return {
+        ...state,
+        favoriteIds: toggleId(state.favoriteIds, action.tweetId),
+        tweets: updateCount(state.tweets, action.tweetId, "favoriteCount", on ? -1 : 1),
       };
     }
-    case "toggle-repost": {
-      const reposted = state.repostedIds.includes(action.tweetId);
+    case "toggle-retweet": {
+      const on = state.retweetIds.includes(action.tweetId);
       return {
         ...state,
-        repostedIds: toggleId(state.repostedIds, action.tweetId),
-        tweets: updateTweetCount(
-          state.tweets,
-          action.tweetId,
-          "repostCount",
-          reposted ? -1 : 1,
-        ),
+        retweetIds: toggleId(state.retweetIds, action.tweetId),
+        tweets: updateCount(state.tweets, action.tweetId, "retweetCount", on ? -1 : 1),
       };
     }
     case "toggle-follow":
@@ -155,30 +195,21 @@ function reducer(state: AppState, action: Action): AppState {
         id: crypto.randomUUID(),
         authorId: CURRENT_USER_ID,
         text: action.text,
-        createdAt: new Date().toISOString(),
+        time: { kind: "relative", createdAt: new Date().toISOString() },
+        source: "web",
+        favoriteCount: 0,
+        retweetCount: 0,
         replyCount: 0,
-        repostCount: 0,
-        likeCount: 0,
-        viewCount: 0,
-        feeds: ["for-you", "following"],
+        retweetedByName: null,
+        retweetedExtra: 0,
+        featured: false,
+        onProfile: false,
       };
-      if (action.imageSrc !== null) {
-        tweet.image = {
-          from: "#1D9BF0",
-          to: "#0F1419",
-          label: action.imageSrc,
-        };
-      }
       return {
         ...state,
         tweets: [tweet, ...state.tweets],
-        composeOpen: false,
       };
     }
-    case "open-compose":
-      return { ...state, composeOpen: true };
-    case "close-compose":
-      return { ...state, composeOpen: false };
     default: {
       const _exhaustive: never = action;
       return _exhaustive;
@@ -190,23 +221,19 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, createInitialState);
 
   useEffect(() => {
-    document.documentElement.dataset.theme = state.theme;
-  }, [state.theme]);
-
-  useEffect(() => {
     const persisted: PersistedState = {
-      theme: state.theme,
+      signedIn: state.signedIn,
       tweets: state.tweets,
-      likedIds: state.likedIds,
-      repostedIds: state.repostedIds,
+      favoriteIds: state.favoriteIds,
+      retweetIds: state.retweetIds,
       followedIds: state.followedIds,
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
   }, [
-    state.theme,
+    state.signedIn,
     state.tweets,
-    state.likedIds,
-    state.repostedIds,
+    state.favoriteIds,
+    state.retweetIds,
     state.followedIds,
   ]);
 
@@ -214,6 +241,7 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     () => ({
       state,
       currentUserId: CURRENT_USER_ID,
+      tweetMax: TWEET_MAX,
       dispatch,
     }),
     [state],

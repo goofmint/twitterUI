@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 
 const TOKEN_PATTERN =
-  /https?:\/\/[^\s]+|@[A-Za-z0-9_]+|#[\w\u3040-\u30ff\u3400-\u9fff]+/g;
+  /https?:\/\/[^\s]+|@[A-Za-z0-9_]+|#[A-Za-z0-9_]+/g;
 
-export function TweetText({ text }: { text: string }) {
+function linkify(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
   let lastIndex = 0;
   const matches = text.matchAll(TOKEN_PATTERN);
@@ -15,9 +15,16 @@ export function TweetText({ text }: { text: string }) {
       nodes.push(text.slice(lastIndex, index));
     }
     nodes.push(
-      <span key={`${value}-${index.toString()}`} className="text-app-accent">
+      <a
+        key={`${value}-${index.toString()}`}
+        href="#/"
+        className="tweet-link"
+        onClick={(event) => {
+          event.preventDefault();
+        }}
+      >
         {value}
-      </span>,
+      </a>,
     );
     lastIndex = index + value.length;
   }
@@ -26,5 +33,19 @@ export function TweetText({ text }: { text: string }) {
     nodes.push(text.slice(lastIndex));
   }
 
-  return <p className="whitespace-pre-wrap break-words text-[15px] leading-5">{nodes}</p>;
+  return nodes;
+}
+
+export function TweetText({
+  text,
+  className,
+}: {
+  text: string;
+  className: string;
+}) {
+  return <p className={className}>{linkify(text)}</p>;
+}
+
+export function TweetTextInline({ text }: { text: string }) {
+  return <>{linkify(text)}</>;
 }

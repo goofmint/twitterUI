@@ -1,52 +1,48 @@
-export type ThemeId = "default" | "dim" | "lights-out";
+export type ViewId = "profile" | "home" | "messages" | "discover";
 
-export type FeedTab = "for-you" | "following";
+export type UserList = {
+  slug: string;
+  name: string;
+};
 
 export type User = {
   id: string;
   name: string;
   handle: string;
-  verified: boolean;
-  avatarColor: string;
-  avatarInitials: string;
+  avatar: string;
+  bio: string;
+  location: string;
+  followingCount: number;
+  followerCount: number;
+  listedCount: number;
+  tweetCount: number;
+  lists: UserList[];
+  followingAvatars: string[];
 };
 
-export type TweetImage = {
-  from: string;
-  to: string;
-  label: string;
-};
-
-export type QuoteTweet = {
-  authorId: string;
-  text: string;
-};
+export type TweetTime =
+  | { kind: "fixed"; label: string }
+  | { kind: "relative"; createdAt: string };
 
 export type Tweet = {
   id: string;
   authorId: string;
   text: string;
-  createdAt: string;
+  time: TweetTime;
+  source: string;
+  favoriteCount: number;
+  retweetCount: number;
   replyCount: number;
-  repostCount: number;
-  likeCount: number;
-  viewCount: number;
-  image?: TweetImage;
-  quote?: QuoteTweet;
-  feeds: FeedTab[];
-};
-
-export type Trend = {
-  id: string;
-  category: string;
-  name: string;
-  tweetCount: number;
+  retweetedByName: string | null;
+  retweetedExtra: number;
+  featured: boolean;
+  onProfile: boolean;
 };
 
 export type PersistedState = {
-  theme: ThemeId;
+  signedIn: boolean;
   tweets: Tweet[];
-  likedIds: string[];
-  repostedIds: string[];
+  favoriteIds: string[];
+  retweetIds: string[];
   followedIds: string[];
 };
