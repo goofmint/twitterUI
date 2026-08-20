@@ -1,9 +1,17 @@
+import { Rss } from "lucide-react";
 import { formatCount } from "../../lib/format";
 import { useAppState } from "../../state/app-state";
 import type { User } from "../../types";
-import { RssIcon } from "../icons";
 
-export function ProfileSidebar({ user }: { user: User }) {
+export function ProfileSidebar({
+  user,
+  tab,
+  onTab,
+}: {
+  user: User;
+  tab: "tweets" | "favorites";
+  onTab: (tab: "tweets" | "favorites") => void;
+}) {
   const { state, currentUserId, dispatch } = useAppState();
   const following = state.followedIds.includes(user.id);
   const isSelf = user.id === currentUserId;
@@ -56,40 +64,35 @@ export function ProfileSidebar({ user }: { user: User }) {
         </button>
       </div>
 
-      <div className="nav-row active">
-        <span>Tweets</span>
-        <span className="count">{formatCount(user.tweetCount)}</span>
-      </div>
-      <button type="button" className="nav-row w-full text-left">
-        Favorites
-      </button>
-      <div className="section-label">Lists</div>
-      {user.lists.map((list) => (
-        <a
-          key={list.slug}
-          href="#/"
-          className="block"
-          onClick={(event) => {
-            event.preventDefault();
-          }}
-        >
-          @{user.handle}/{list.name}
-        </a>
-      ))}
-      <a
-        href="#/"
-        className="view-all"
-        onClick={(event) => {
-          event.preventDefault();
+      <button
+        type="button"
+        className={`nav-row w-full${tab === "tweets" ? " active" : ""}`}
+        aria-current={tab === "tweets" ? "page" : undefined}
+        onClick={() => {
+          onTab("tweets");
         }}
       >
-        View all
-      </a>
+        <span>Tweets</span>
+        <span className="count">{formatCount(user.tweetCount)}</span>
+      </button>
+      <button
+        type="button"
+        className={`nav-row w-full text-left${tab === "favorites" ? " active" : ""}`}
+        aria-current={tab === "favorites" ? "page" : undefined}
+        onClick={() => {
+          onTab("favorites");
+        }}
+      >
+        Favorites
+      </button>
 
       <div className="section-label">Following</div>
-      <div className="follow-grid">
-        {user.followingAvatars.map((src, index) => (
-          <img key={`${src}-${index.toString()}`} src={src} alt="" />
+      <div className="follow-list">
+        {user.followingPeople.map((person) => (
+          <div key={`${person.name}-${person.avatar}`} className="follow-row">
+            <img src={person.avatar} alt="" />
+            <span>{person.name}</span>
+          </div>
         ))}
       </div>
       <a
@@ -109,7 +112,10 @@ export function ProfileSidebar({ user }: { user: User }) {
           event.preventDefault();
         }}
       >
-        <RssIcon /> RSS feed of {user.handle}&apos;s tweets
+        <span className="rss-icon">
+          <Rss size={11} strokeWidth={2.5} />
+        </span>
+        RSS feed of {user.handle}&apos;s tweets
       </a>
     </aside>
   );

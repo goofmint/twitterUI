@@ -9,7 +9,9 @@ export function SignInMenu() {
 
   function submit() {
     if (username.trim() === "" || password === "") {
-      setError("The username and password you entered did not match our records. Please double-check and try again.");
+      setError(
+        "The username and password you entered did not match our records. Please double-check and try again.",
+      );
       return;
     }
     dispatch({ type: "sign-in" });

@@ -13,13 +13,14 @@ import {
 } from "../data/mock";
 import type { PersistedState, Tweet, ViewId } from "../types";
 
-const STORAGE_KEY = "twitterui-state-2010-v1";
+const STORAGE_KEY = "twitterui-state-2010-moongift-v1";
 const TWEET_MAX = 140;
 
 type AppState = {
   signedIn: boolean;
   view: ViewId;
   profileUserId: string;
+  simplePageId: string;
   tweets: Tweet[];
   favoriteIds: string[];
   retweetIds: string[];
@@ -40,6 +41,7 @@ type Action =
   | { type: "sign-out" }
   | { type: "set-view"; view: ViewId }
   | { type: "open-profile"; userId: string }
+  | { type: "open-simple"; pageId: string }
   | { type: "toggle-favorite"; tweetId: string }
   | { type: "toggle-retweet"; tweetId: string }
   | { type: "toggle-follow"; userId: string }
@@ -83,6 +85,7 @@ function createInitialState(): AppState {
       signedIn: false,
       view: "profile",
       profileUserId: FEATURED_PROFILE_ID,
+      simplePageId: "about",
       tweets: initialTweets,
       favoriteIds: [],
       retweetIds: [],
@@ -96,6 +99,7 @@ function createInitialState(): AppState {
     signedIn: persisted.signedIn,
     view: persisted.signedIn ? "home" : "profile",
     profileUserId: FEATURED_PROFILE_ID,
+    simplePageId: "about",
     tweets: persisted.tweets,
     favoriteIds: persisted.favoriteIds,
     retweetIds: persisted.retweetIds,
@@ -169,6 +173,14 @@ function reducer(state: AppState, action: Action): AppState {
         accountOpen: false,
         signInOpen: false,
       };
+    case "open-simple":
+      return {
+        ...state,
+        view: "simple",
+        simplePageId: action.pageId,
+        accountOpen: false,
+        signInOpen: false,
+      };
     case "toggle-favorite": {
       const on = state.favoriteIds.includes(action.tweetId);
       return {
@@ -191,12 +203,13 @@ function reducer(state: AppState, action: Action): AppState {
         followedIds: toggleId(state.followedIds, action.userId),
       };
     case "add-tweet": {
-      const tweet: Tweet = {
+      const nextTweet: Tweet = {
         id: crypto.randomUUID(),
         authorId: CURRENT_USER_ID,
         text: action.text,
         time: { kind: "relative", createdAt: new Date().toISOString() },
         source: "web",
+        replyToHandle: null,
         favoriteCount: 0,
         retweetCount: 0,
         replyCount: 0,
@@ -207,7 +220,7 @@ function reducer(state: AppState, action: Action): AppState {
       };
       return {
         ...state,
-        tweets: [tweet, ...state.tweets],
+        tweets: [nextTweet, ...state.tweets],
       };
     }
     default: {

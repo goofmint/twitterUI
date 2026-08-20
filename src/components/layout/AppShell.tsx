@@ -1,24 +1,31 @@
+import { FEATURED_PROFILE_ID } from "../../data/mock";
 import { useAppState } from "../../state/app-state";
 import { HomePage } from "../home/HomePage";
 import { ProfilePage } from "../profile/ProfilePage";
-import { DiscoverPage, MessagesPage } from "./SimplePages";
+import { DiscoverPage, MessagesPage, SimplePageView } from "./SimplePages";
 import { SignUpModal } from "./SignUpModal";
-import { GeeseFlock } from "./GeeseFlock";
+import { SiteFooter } from "./SiteFooter";
 import { TopBar } from "./TopBar";
 
 export function AppShell() {
   const { state } = useAppState();
-  const jackProfile = state.view === "profile" && state.profileUserId === "jack";
-  const skin = jackProfile ? "skin-jack" : "skin-home";
+  const profileSkin =
+    state.view === "profile" && state.profileUserId === FEATURED_PROFILE_ID;
+  const skin = profileSkin || (!state.signedIn && state.view === "simple")
+    ? "skin-profile"
+    : "skin-home";
 
   return (
     <div className={skin}>
-      {jackProfile ? <GeeseFlock /> : null}
       <TopBar />
-      {state.view === "profile" ? <ProfilePage /> : null}
+      {state.view === "profile" ? (
+        <ProfilePage key={`${state.profileUserId}-${state.signedIn ? "in" : "out"}`} />
+      ) : null}
       {state.view === "home" ? <HomePage /> : null}
       {state.view === "messages" ? <MessagesPage /> : null}
       {state.view === "discover" ? <DiscoverPage /> : null}
+      {state.view === "simple" ? <SimplePageView /> : null}
+      <SiteFooter />
       <SignUpModal />
     </div>
   );

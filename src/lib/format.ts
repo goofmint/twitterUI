@@ -72,6 +72,9 @@ export function formatRelativeTime(iso: string, now: number): string {
   const ampm = hours >= 12 ? "PM" : "AM";
   const hour12 = hours % 12 === 0 ? 12 : hours % 12;
   const month = MONTHS[created.getMonth()];
+  if (month === undefined) {
+    throw new Error(`月が不正です: ${created.getMonth().toString()}`);
+  }
   const day = ordinal(created.getDate());
   return `${hour12.toString()}:${minutes} ${ampm} ${month} ${day}`;
 }

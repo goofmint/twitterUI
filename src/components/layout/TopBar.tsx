@@ -1,8 +1,8 @@
 import { useEffect, useRef } from "react";
-import { requireUser } from "../../data/mock";
+import { Bird, ChevronDown, Search } from "lucide-react";
+import { FEATURED_PROFILE_ID, requireUser } from "../../data/mock";
 import { useAppState } from "../../state/app-state";
 import { Avatar } from "../Avatar";
-import { BirdSilhouette } from "../icons";
 import { SignInMenu } from "./SignInMenu";
 
 export function TopBar() {
@@ -35,10 +35,14 @@ export function TopBar() {
             type="button"
             aria-label="Twitter"
             onClick={() => {
-              dispatch({ type: "open-profile", userId: "jack" });
+              dispatch({ type: "open-profile", userId: FEATURED_PROFILE_ID });
             }}
           >
-            <img src="/img/twitter-wordmark.png" alt="twitter" className="wordmark" />
+            <img
+              src="/img/twitter-wordmark.png"
+              alt="twitter"
+              className="wordmark"
+            />
           </button>
           <div className="relative">
             <button
@@ -53,7 +57,7 @@ export function TopBar() {
               }}
             >
               Have an account? <b>Sign in</b>
-              <span className="caret">▾</span>
+              <ChevronDown size={12} strokeWidth={2} />
             </button>
             {state.signInOpen ? <SignInMenu /> : null}
           </div>
@@ -70,12 +74,11 @@ export function TopBar() {
             type="button"
             aria-label="Home"
             className="px-1 text-white"
-            style={{ color: "#fff" }}
             onClick={() => {
               dispatch({ type: "set-view", view: "home" });
             }}
           >
-            <BirdSilhouette size={22} />
+            <Bird size={22} strokeWidth={1.8} color="#fff" />
           </button>
           <nav className="nav-links">
             <NavButton
@@ -87,7 +90,9 @@ export function TopBar() {
             />
             <NavButton
               label="Profile"
-              active={state.view === "profile" && state.profileUserId === currentUserId}
+              active={
+                state.view === "profile" && state.profileUserId === currentUserId
+              }
               onClick={() => {
                 dispatch({ type: "open-profile", userId: currentUserId });
               }}
@@ -109,7 +114,10 @@ export function TopBar() {
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <input className="search" type="search" placeholder="Search" />
+          <label className="search-wrap">
+            <Search size={13} strokeWidth={2} color="#999" />
+            <input className="search" type="search" placeholder="Search" />
+          </label>
           <div className="relative">
             <button
               type="button"
@@ -120,7 +128,7 @@ export function TopBar() {
             >
               <Avatar src={me.avatar} alt="" size={22} />
               {me.name}
-              <span className="caret">▾</span>
+              <ChevronDown size={12} strokeWidth={2} />
             </button>
             {state.accountOpen ? (
               <div className="menu w-[180px]">

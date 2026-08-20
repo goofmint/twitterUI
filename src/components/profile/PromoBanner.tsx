@@ -1,5 +1,5 @@
+import { Bird, ChevronRight, Smartphone } from "lucide-react";
 import { useAppState } from "../../state/app-state";
-import { BirdSilhouette, PhoneIcon } from "../icons";
 import type { User } from "../../types";
 
 export function PromoBanner({ user }: { user: User }) {
@@ -8,7 +8,7 @@ export function PromoBanner({ user }: { user: User }) {
   return (
     <section className="promo">
       <div className="promo-bird">
-        <BirdSilhouette size={36} />
+        <Bird size={40} strokeWidth={1.4} fill="currentColor" />
       </div>
       <h1 className="promo-title">
         Get short, timely messages from {user.name}.
@@ -25,7 +25,17 @@ export function PromoBanner({ user }: { user: User }) {
         >
           Join today
         </button>{" "}
-        and follow @{user.handle}.
+        and follow{" "}
+        <a
+          href="#/"
+          className="tweet-link"
+          onClick={(event) => {
+            event.preventDefault();
+          }}
+        >
+          @{user.handle}
+        </a>
+        .
       </p>
       <div className="promo-row">
         <button
@@ -35,11 +45,11 @@ export function PromoBanner({ user }: { user: User }) {
             dispatch({ type: "open-sign-up" });
           }}
         >
-          Sign Up ›
+          Sign Up <ChevronRight size={14} strokeWidth={2.5} />
         </button>
         <p className="sms">
           <span className="mr-1 inline-block align-middle text-[#aaa]">
-            <PhoneIcon />
+            <Smartphone size={14} strokeWidth={2} />
           </span>
           Get updates via SMS by texting <strong>follow {user.handle}</strong> to{" "}
           <strong>40404</strong> in the United States

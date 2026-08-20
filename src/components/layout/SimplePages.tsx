@@ -1,4 +1,4 @@
-import { homeSuggestions, requireUser } from "../../data/mock";
+import { homeSuggestions, requireSimplePage, requireUser } from "../../data/mock";
 import { useAppState } from "../../state/app-state";
 import { Avatar } from "../Avatar";
 
@@ -8,7 +8,10 @@ export function MessagesPage() {
       <div className="home-layout">
         <div className="home-main empty">
           <h1 className="mb-2 text-lg font-bold">Direct messages</h1>
-          <p>You have no messages. In 2011 they arrived here, one conversation at a time.</p>
+          <p>
+            You have no messages. In 2010 they arrived here, one conversation at
+            a time.
+          </p>
         </div>
       </div>
     </div>
@@ -23,7 +26,7 @@ export function DiscoverPage() {
       <div className="home-layout">
         <div className="home-main p-5">
           <h1 className="mb-3 text-lg font-bold">Who to follow</h1>
-          {homeSuggestions.concat(["jack", "biz"]).map((id) => {
+          {homeSuggestions.concat(["moongift", "biz"]).map((id) => {
             const user = requireUser(id);
             const following = state.followedIds.includes(id);
             return (
@@ -58,6 +61,20 @@ export function DiscoverPage() {
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+export function SimplePageView() {
+  const { state } = useAppState();
+  const page = requireSimplePage(state.simplePageId);
+
+  return (
+    <div className="page">
+      <div className="simple-card">
+        <h1>{page.title}</h1>
+        <p>{page.body}</p>
       </div>
     </div>
   );

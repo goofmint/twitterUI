@@ -1,8 +1,8 @@
-export type ViewId = "profile" | "home" | "messages" | "discover";
+export type ViewId = "profile" | "home" | "messages" | "discover" | "simple";
 
-export type UserList = {
-  slug: string;
+export type FollowPerson = {
   name: string;
+  avatar: string;
 };
 
 export type User = {
@@ -16,8 +16,7 @@ export type User = {
   followerCount: number;
   listedCount: number;
   tweetCount: number;
-  lists: UserList[];
-  followingAvatars: string[];
+  followingPeople: FollowPerson[];
 };
 
 export type TweetTime =
@@ -30,6 +29,7 @@ export type Tweet = {
   text: string;
   time: TweetTime;
   source: string;
+  replyToHandle: string | null;
   favoriteCount: number;
   retweetCount: number;
   replyCount: number;
@@ -37,6 +37,12 @@ export type Tweet = {
   retweetedExtra: number;
   featured: boolean;
   onProfile: boolean;
+};
+
+export type SimplePage = {
+  id: string;
+  title: string;
+  body: string;
 };
 
 export type PersistedState = {

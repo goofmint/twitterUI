@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 
-const TOKEN_PATTERN =
-  /https?:\/\/[^\s]+|@[A-Za-z0-9_]+|#[A-Za-z0-9_]+/g;
+const TOKEN_PATTERN = /https?:\/\/[^\s]+|@[A-Za-z0-9_]+|#[A-Za-z0-9_]+/g;
 
 function linkify(text: string): ReactNode[] {
   const nodes: ReactNode[] = [];
